@@ -45,7 +45,7 @@
     height:60px;display:flex;align-items:center;gap:22px;
   }
   .site-name{
-    font-size:22px;font-weight:700;color:var(--txt);letter-spacing:1px;white-space:nowrap;
+    font-size:22px;font-weight:700;color:var(--txt);letter-spacing:1px;white-space:nowrap;cursor:pointer;
   }
   .site-name em{font-style:normal;color:var(--green)}
   .site-sub{font-size:11px;color:var(--faint);margin-left:8px;letter-spacing:1px;white-space:nowrap}
@@ -635,7 +635,15 @@ window.addEventListener('hashchange', route);
 /* ---------- events ---------- */
 const qInput = document.getElementById('q');
 qInput.addEventListener('input', e=>{ kw = e.target.value; renderGrid(); });
-document.getElementById('qbtn').addEventListener('click', ()=>{ kw = qInput.value; renderGrid(); });
+function doSearchAll(){
+    kw = qInput.value.trim();
+    curTime='all'; curCat='全部'; curScore=0; onlyRated=false;
+    renderTimeTabs(); renderScoreTabs(); renderFilters(); renderGrid();
+  }
+  document.getElementById('qbtn').addEventListener('click', doSearchAll);
+  qInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); doSearchAll(); } });
+  /* 左上角站名 → 回主页 */
+  document.querySelector('.site-name').addEventListener('click', ()=>{ location.hash = '#/'; });
 document.getElementById('onlyRated').addEventListener('change', e=>{ onlyRated = e.target.checked; renderGrid(); });
 function renderSortTabs(){
   const opts = [['new','最新更新'],['score_desc','评分最高'],['score_asc','评分最低']];
