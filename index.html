@@ -506,7 +506,7 @@ function renderGrid(){
     <div class="card" data-id="${d.id}" tabindex="0" role="button" aria-label="${esc(d.t)}" onclick="location.hash='#/movie/${d.id}'">
       <div class="poster">
         <span class="cat">${esc(d.cat)}</span>
-        <img loading="lazy" src="${esc(d.img)}" data-fb="${esc(d.fallback||'')}" alt="${esc(d.t)}" onerror="var f=this.dataset.fb;if(f&&this.src!==f){this.src=f;}else{this.style.display='none';this.nextElementSibling.style.display='grid'}">
+        <img loading="lazy" referrerpolicy="no-referrer" src="${esc(d.img)}" data-fb="${esc(d.fallback||'')}" alt="${esc(d.t)}" onerror="var f=this.dataset.fb;if(f&&this.src!==f){this.src=f;}else{this.style.display='none';this.nextElementSibling.style.display='grid'}">
         <div class="noimg" style="display:none">
           <div><div class="t">暂无海报</div><a href="https://6huo.com/?s=${encodeURIComponent(d.t)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">去 6huo.com 找物料 →</a></div>
         </div>
