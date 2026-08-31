@@ -634,7 +634,12 @@ function route(){
 window.addEventListener('hashchange', route);
 /* ---------- events ---------- */
 const qInput = document.getElementById('q');
-qInput.addEventListener('input', e=>{ kw = e.target.value; renderGrid(); });
+qInput.addEventListener('input', e=>{
+    kw = e.target.value.trim();
+    if(kw){ curTime='all'; curCat='全部'; curScore=0; onlyRated=false; renderTimeTabs(); renderScoreTabs(); renderFilters(); }
+    else { curTime='week'; curCat='全部'; curScore=6; onlyRated=false; renderTimeTabs(); renderScoreTabs(); renderFilters(); }
+    renderGrid();
+  });
 function doSearchAll(){
     kw = qInput.value.trim();
     curTime='all'; curCat='全部'; curScore=0; onlyRated=false;
