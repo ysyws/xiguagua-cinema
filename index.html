@@ -321,6 +321,25 @@
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{transition:none!important;animation:none!important}
   }
+
+.pansection{margin:0 auto;max-width:1080px;padding:0 16px}
+.pan-wrap{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:24px;box-shadow:0 1px 4px rgba(0,0,0,.03)}
+.pan-loading{color:var(--muted);font-size:13px;padding:10px 0}
+.pan-empty{color:var(--muted);font-size:13px;padding:10px 0}
+.pan-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px;border-bottom:2px solid var(--green);padding-bottom:8px}
+.pan-title{font-size:16px;font-weight:700;color:var(--txt)}
+.pan-count{font-size:13px;color:var(--green-deep)}
+.pan-count b{font-size:15px}
+.pan-list{display:flex;flex-direction:column}
+.pan-item{display:flex;align-items:center;gap:12px;padding:9px 4px;border-bottom:1px dashed var(--line)}
+.pan-item:last-child{border-bottom:none}
+.pan-fn{flex:1;min-width:0;font-size:14px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pan-meta{font-size:12px;color:var(--muted);flex-shrink:0}
+.pan-link{flex-shrink:0;font-size:12px;font-weight:600;color:var(--green);text-decoration:none;border:1px solid var(--green);padding:3px 10px;border-radius:4px;white-space:nowrap}
+.pan-link:hover{background:var(--green);color:#fff}
+.pan-more{font-size:12px;color:var(--muted);margin-top:10px}
+.pan-more a{color:var(--green);text-decoration:none}
+
 </style>
 </head>
 <body>
@@ -375,6 +394,10 @@
 
 <section class="grid" id="listView">
   <div class="wrap" id="grid"></div>
+</section>
+
+<section class="pansection" id="panSection" hidden>
+  <div class="wrap pan-wrap" id="panWrap"></div>
 </section>
 
 <section class="detail" id="detailView" hidden>
@@ -644,10 +667,46 @@ qInput.addEventListener('input', e=>{
     else { curTime='week'; curCat='全部'; curScore=6; onlyRated=false; renderTimeTabs(); renderScoreTabs(); renderFilters(); }
     renderGrid();
   });
+/* ---------- 夸克网盘全网聚合搜索 ---------- */
+const PAN_API = 'https://fc-resource-node-api.krzb.net/api/v1/pan/search';
+function fmtSize(b){ if(!b) return ''; b=Number(b); if(b>=1099511627776) return (b/1099511627776).toFixed(2)+' TB'; if(b>=1073741824) return (b/1073741824).toFixed(2)+' GB'; if(b>=1048576) return (b/1048576).toFixed(1)+' MB'; if(b>0) return Math.round(b/1024)+' KB'; return ''; }
+async function searchPanNetwork(kw){
+  const sec = document.getElementById('panSection');
+  if(!kw){ sec.hidden = true; return; }
+  sec.hidden = false;
+  const wrap = document.getElementById('panWrap');
+  wrap.innerHTML = '<div class="pan-loading">正在搜索夸克网盘全网资源…</div>';
+  try{
+    const res = await fetch(PAN_API + '?kw=' + encodeURIComponent(kw) + '&page=1&size=10&resType=quark');
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const total = data.total || 0;
+    const rs = data.resources || [];
+    if(!rs.length){
+      wrap.innerHTML = '<div class="pan-empty">夸克网盘全网搜索「' + esc(kw) + '」：0 条结果，可点击下方搜索站跳转再试。</div>';
+      return;
+    }
+    const items = rs.map(r=>{
+      const x = r.res || {};
+      const fid = x.fid || '';
+      const link = fid ? ('https://pan.quark.cn/s/' + fid) : '';
+      const fl = x.filelist || [];
+      const fn = (x.filename || '').replace(/<\/?mark>/g, '');
+      return '<div class="pan-item"><div class="pan-fn">' + esc(fn) + '</div><div class="pan-meta">' + (fmtSize(x.size)||'') + (fl.length ? ' · ' + fl.length + '个文件' : '') + '</div><a class="pan-link" href="' + esc(link) + '" target="_blank" rel="noopener">夸克转存 ↗</a></div>';
+    }).join('');
+    wrap.innerHTML =
+      '<div class="pan-head"><span class="pan-title">夸克网盘全网搜索</span><span class="pan-count">「' + esc(kw) + '」共找到 <b>' + total + '</b> 条夸克资源</span></div>'
+      + '<div class="pan-list">' + items + '</div>'
+      + '<div class="pan-more">仅显示前 ' + rs.length + ' 条。更多结果：<a href="https://www.xiaomapan.com/#/main/search?restype=2&kw=' + encodeURIComponent(kw) + '" target="_blank" rel="noopener">小马盘</a> · <a href="https://www.feizhupan.com/#/main/search?restype=2&kw=' + encodeURIComponent(kw) + '" target="_blank" rel="noopener">飞猪盘</a> · <a href="https://www.pikasoo.top/s?q=' + encodeURIComponent(kw) + '" target="_blank" rel="noopener">皮卡搜</a> · <a href="https://www.quarkpanso.com/#/search?keyword=' + encodeURIComponent(kw) + '" target="_blank" rel="noopener">夸克盘搜</a></div>';
+  }catch(e){
+    wrap.innerHTML = '<div class="pan-empty">夸克网盘全网搜索暂不可用（' + esc(String(e && e.message || e)) + '）。可点击下方搜索站跳转。</div>';
+  }
+}
 function doSearchAll(){
     kw = qInput.value.trim();
     curTime='all'; curCat='全部'; curScore=0; onlyRated=false;
     renderTimeTabs(); renderScoreTabs(); renderFilters(); renderGrid();
+    searchPanNetwork(kw);
   }
   document.getElementById('qbtn').addEventListener('click', doSearchAll);
   qInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); doSearchAll(); } });
@@ -656,6 +715,7 @@ function doSearchAll(){
     location.hash = '#/';
     kw=''; curTime='week'; curCat='全部'; curScore=6; onlyRated=false;
     document.getElementById('q').value='';
+    document.getElementById('panSection').hidden = true;
     renderTimeTabs(); renderScoreTabs(); renderFilters(); renderGrid();
   });
 document.getElementById('onlyRated').addEventListener('change', e=>{ onlyRated = e.target.checked; renderGrid(); });
