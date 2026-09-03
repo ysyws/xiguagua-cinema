@@ -475,8 +475,8 @@ function yearOf(d){
 /* ---------- state ---------- */
 let curCat = '全部';
 let kw = '';
-let curTime = 'week';     // all | week | month | year
-let curScore = 6;         // 0=全部 6=6分以上 7 8
+let curTime = 'all';     // all | week | month | year
+let curScore = 0;         // 0=全部 6=6分以上 7 8
 let curSort = 'new';      // new | score_desc | score_asc
 let onlyRated = false;
 /* ---------- render list ---------- */
@@ -495,7 +495,7 @@ function renderFilters(){
   const html = cats.map(c=>{
     const active = c===curCat?' active':'';
     return `<button class="tab${active}" data-cat="${c}">${c}<span class="cnt">${counts[c]}</span></button>`;
-  }).join('') + `<span class="nav-meta">默认展示近一周(含今天共7天) · 评分6分以上 · 评分默认豆瓣，缺豆瓣取 IMDb/烂番茄/Letterboxd</span>`;
+  }).join('') + `<span class="nav-meta">默认展示最近更新 · 评分全部 · 评分默认豆瓣，缺豆瓣取 IMDb/烂番茄/Letterboxd</span>`;
   const box = document.getElementById('filters');
   box.innerHTML = html;
   box.querySelectorAll('.tab').forEach(t=>{
