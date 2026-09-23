@@ -702,7 +702,7 @@ const qInput = document.getElementById('q');
 qInput.addEventListener('input', e=>{
     kw = e.target.value.trim();
     if(kw){ curTime='all'; curCat='全部'; curScore=0; onlyRated=false; renderTimeTabs(); renderScoreTabs(); renderFilters(); }
-    else { curTime='week'; curCat='全部'; curScore=6; onlyRated=false; renderTimeTabs(); renderScoreTabs(); renderFilters(); }
+    else { curTime='all'; curCat='全部'; curScore=0; onlyRated=false; renderTimeTabs(); renderScoreTabs(); renderFilters(); }
     renderGrid();
   });
 /* ---------- 夸克网盘全网聚合搜索 ---------- */
@@ -753,7 +753,7 @@ function doSearchAll(){
   /* 左上角站名 → 回主页 */
   document.querySelector('.site-name').addEventListener('click', ()=>{
     location.hash = '#/';
-    kw=''; curTime='week'; curCat='全部'; curScore=6; onlyRated=false;
+    kw=''; curTime='all'; curCat='全部'; curScore=0; onlyRated=false;
     document.getElementById('q').value='';
     document.getElementById('panSection').hidden = true;
     renderTimeTabs(); renderScoreTabs(); renderFilters(); renderGrid();
