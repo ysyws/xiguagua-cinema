@@ -499,6 +499,7 @@ let kw = '';
 let curTime = 'all';     // all | week | month | year
 let curScore = 0;         // 0=全部 6=6分以上 7 8
 let curSort = 'new';      // new | score_desc | score_asc
+let visibleCount = 60;    // 初始渲染条数，加载更多时递增
 let onlyRated = false;
 /* ---------- render list ---------- */
 function renderStats(){
@@ -552,7 +553,8 @@ function ratingHTML(d, na){
   const val = d.r[src.k];
   return `<span class="rate">${STAR}${esc(val)}<span class="src">${src.name}</span></span>`;
 }
-function renderGrid(){
+function renderGrid(keepScroll){
+  if(!keepScroll) visibleCount = 60;
   const kwl = kw.trim().toLowerCase();
   let list = DATA.filter(d=> (curCat==='全部' || d.cat===curCat) && inTime(d, curTime));
   if(curScore>0) list = list.filter(d=> scoreNum(d) >= curScore);
@@ -575,7 +577,9 @@ function renderGrid(){
     grid.innerHTML = `<div class="empty" style="display:block"><b>没有匹配的资源</b>${hint}</div>`;
     return;
   }
-  grid.innerHTML = list.map(d=>{
+  const shown = list.slice(0, visibleCount);
+  const remain = list.length - shown.length;
+  grid.innerHTML = shown.map(d=>{
     const na = d.prim==='';
     return `
     <div class="card" data-id="${d.id}" tabindex="0" role="button" aria-label="${esc(d.t)}" onclick="location.hash='#/movie/${d.id}'">
@@ -592,12 +596,16 @@ function renderGrid(){
         <a class="card-dl" href="${esc(d.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">夸克网盘 ↗</a>
       </div>
     </div>`;
-  }).join('');
+  }).join('') + (remain > 0
+    ? `<div style="grid-column:1/-1;text-align:center;padding:18px;color:var(--green)"><button id="loadMoreBtn" style="background:var(--green);color:#fff;border:none;border-radius:20px;padding:10px 28px;font-size:14px;cursor:pointer">加载更多（已显示 ${shown.length} / ${list.length}，剩余 ${remain} 条）</button></div>`
+    : `<div style="grid-column:1/-1;text-align:center;padding:14px;color:#999;font-size:13px">已显示全部 ${list.length} 条</div>`);
   grid.querySelectorAll('.card').forEach(card=>{
     card.addEventListener('keydown', e=>{
       if(e.key==='Enter'||e.key===' '){ e.preventDefault(); location.hash = '#/movie/'+card.dataset.id; }
     });
   });
+  const lb = document.getElementById('loadMoreBtn');
+  if(lb){ lb.onclick = ()=>{ visibleCount += 60; renderGrid(true); window.scrollBy({top:300,behavior:'smooth'}); }; }
 }
 /* ---------- detail (豆瓣风格) ---------- */
 function parseMeta(m){
